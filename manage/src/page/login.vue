@@ -4,8 +4,8 @@
 		  		<div class="manage_tip">
 		  			<p>接口管理系统</p>
             <el-form :model="loginForm" :rules="rules"  status-icon ref="loginForm">
-              <el-form-item  prop="username">
-                 <el-input v-model="loginForm.username" placeholder="用户名"></el-input>
+              <el-form-item  prop="QQ">
+                 <el-input v-model="loginForm.QQ" placeholder="QQ"></el-input>
               </el-form-item>
               <el-form-item prop="password">
                  <el-input v-model="loginForm.password" placeholder="密码"></el-input>
@@ -20,29 +20,32 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   data () {
     return {
       loginForm : {
-        username : '',
+        QQ : '',
         password : ''
       },
       rules: {
-					username: [
-			            { required: true, message: '请输入用户名', trigger: 'blur' },
+					QQ: [
+			            { required: true, message: '请输入QQ', trigger: 'blur' },
 			        ],
 					password: [
-						{ required: true, message: '请输入密码', trigger: 'blur' }
+						      { required: true, message: '请输入密码', trigger: 'blur' }
 					],
 				}
     }
   },
   methods : {
-    submitForm (formName){
-      this.$refs[formName].validate( (valid) => {
+    async submitForm (formName){
+      this.$refs[formName].validate( async (valid) => {
         if(valid){
-          //发送请求,登录
-          alert('submit')
+            let result = await axios.post('/admin/login',{
+                  QQ : this.loginForm.QQ,
+                  password : this.loginForm.password
+            })
         }else{
           //失败,返回错误信息
           console.log('error')
