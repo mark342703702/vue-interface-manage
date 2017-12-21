@@ -29,12 +29,14 @@ export default {
         password : ''
       },
       rules: {
-					QQ: [
+          QQ:
+              [
 			            { required: true, message: '请输入QQ', trigger: 'blur' },
 			        ],
-					password: [
+          password: 
+              [
 						      { required: true, message: '请输入密码', trigger: 'blur' }
-					],
+					    ]
 				}
     }
   },
@@ -46,9 +48,27 @@ export default {
                   QQ : this.loginForm.QQ,
                   password : this.loginForm.password
             })
+            if(result.data.status == 0){
+               //登录成功操作
+              this.$message({
+                 type : 'success',
+                 message : result.data.message
+               })
+               this.$router.push('manage')
+            }else{
+              this.$message({
+                type : 'error',
+                message : result.data.message
+              })
+            }
         }else{
           //失败,返回错误信息
-          console.log('error')
+          this.$notify({
+            type : 'error',
+            message : '请输入QQ或者密码',
+            duration : 1500,
+            showClose : false
+          })
           return false
         }
       })
