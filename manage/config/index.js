@@ -21,6 +21,10 @@ module.exports = {
 
       '/shop' : {
         target : 'http://localhost:3000'
+      },
+
+      '/product' : {
+        target : 'http://localhost:3000'
       }
     },
 
