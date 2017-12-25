@@ -3,15 +3,16 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
-import productList from '@/page/productList'
+
 import login from '@/page/login'
 import manage from '@/page/manage'
-import memberList from '@/page/memberList'
-import addMember from '@/page/addMember'
-import addProduct from '@/page/addProduct'
-import addAdmin from '@/page/addAdmin'
-import addGirl from '@/page/addGirl'
-import addShop from '@/page/addShop'
+import productList from '@/page/list/productList'
+import memberList from '@/page/list/memberList'
+import addMember from '@/page/add/addMember'
+import addProduct from '@/page/add/addProduct'
+import addAdmin from '@/page/add/addAdmin'
+import addGirl from '@/page/add/addGirl'
+import addShop from '@/page/add/addShop'
 
 const routes = [
     {

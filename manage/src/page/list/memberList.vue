@@ -20,7 +20,6 @@
             <el-table-column prop="create_time" label="创建时间"></el-table-column>
             <el-table-column prop="memberId" label="会员id"></el-table-column>
             <el-table-column prop="member_name" label="会员姓名"></el-table-column>
-            </el-table-column>
         </el-table>
     </div>
   </div>

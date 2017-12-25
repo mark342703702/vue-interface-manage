@@ -1,8 +1,8 @@
 import axios from 'axios'
 
 //获取会员数据
-export const getAllMemberData = (data = {}) => {
-    return axios.get('/member/findMember', data)
+export const getAllMemberData = () => {
+    return axios.get('/member/findMember')
 }
 
 //增加会员

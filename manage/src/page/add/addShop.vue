@@ -25,7 +25,6 @@ export default {
         return {
             addShopForm : {
                 shop_name : ''
-                
             },
 
             addShopRules : {

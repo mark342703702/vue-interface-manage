@@ -23,7 +23,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="success" class="submit_btn" @click="addMember('GirlForm')">添加会员</el-button>
+                        <el-button type="success" class="submit_btn" @click="addMember('GirlForm')">添加职员</el-button>
                     </el-form-item> 
                 </el-form>
            </el-col>
@@ -108,7 +108,6 @@ export default {
                 let shopResult = await getShopData({},fields)
                 if(shopResult.data.status === 0){
                     this.ShopOptions = shopResult.data.result
-                    console.log(shopResult.data.result)
                 }else{
                     throw new Error('获取店铺数据失败')
                 }

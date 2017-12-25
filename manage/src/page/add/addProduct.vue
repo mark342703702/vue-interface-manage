@@ -26,7 +26,7 @@
                         </el-cascader>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="success" class="submit_btn" @click="addProduct('ProductForm')">添加店铺</el-button>
+                        <el-button type="success" class="submit_btn" @click="addProduct('ProductForm')">添加商品</el-button>
                     </el-form-item> 
                 </el-form>
            </el-col>
@@ -35,12 +35,11 @@
 </template>
 
 <script>
-import {getCategoryData} from '@/api/product'
+import {getCategoryData, addProductData} from '@/api/product'
 export default { 
     data (){
         return {
             categoryOptions : [],
-            asd : 'asd',
             addProductForm : {
                 product_name : '',
                 productId : '',
@@ -92,25 +91,22 @@ export default {
                         year : category[1],
                         season : category[2],
                         style : category[3]
-
                     }
 
-                    console.log(params)
-
-                    // let result = await addShopData(params)
-                    
-                    // if(result.data.status === 0){
-                    //     this.$message({
-                    //         type : 'success',
-                    //         message : result.data.message
-                    //     })
-                    //     this.$refs[formName].resetFields()
-                    // }else{
-                    //     this.$message({
-                    //         type : 'error',
-                    //         message : result.data.message
-                    //     })
-                    // }
+                    let result = await addProductData(params)   
+                    console.log(result)
+                    if(result.data.status === 0){
+                        this.$message({
+                            type : 'success',
+                            message : result.data.message
+                        })
+                        this.$refs[formName].resetFields()
+                    }else{
+                        this.$message({
+                            type : 'error',
+                            message : result.data.message
+                        })
+                    }
                     
                 } else {
                     this.$notify({
