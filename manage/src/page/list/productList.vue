@@ -38,8 +38,14 @@
         </el-table>
         <div class="Pagination">
                  <el-pagination
-                    layout="prev, pager, next"
-                    :total="50">
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    background
+                    layout="prev, pager, next, jumper, total, sizes"
+                    :current-page="currentPage"
+                    :page-sizes="[10, 20, 30, 40]"
+                    :page-size="pageSize"
+                    :total="ProductDataTotal">
                 </el-pagination>
         </div>
         <el-dialog
@@ -54,7 +60,7 @@
                  <el-input v-model="selectForm.product_name" clearable  suffix-icon="el-icon-edit"></el-input>
             </el-form-item>
             <el-form-item label="商品库存" prop="stock">
-                 <el-input v-model="selectForm.stock" clearable suffix-icon="el-icon-edit"></el-input>
+                 <el-input-number v-model="selectForm.stock" :min="1" :max="100" clearable></el-input-number>
             </el-form-item>
             <el-form-item label="售价" prop="sale_price">
                  <el-input :disabled="true" v-model="selectForm.sale_price"></el-input>
@@ -63,14 +69,13 @@
                         <el-cascader
                             :options="categoryOptions"
                             size="medium"
-                            expand-trigger="hover"
                             v-model="selectForm.selectCategoryOption">
                         </el-cascader>
             </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
             <el-button @click="dialogVisible = false">取 消</el-button>
-            <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+            <el-button type="primary" @click="updateProduct">确 定</el-button>
         </span>
         </el-dialog>
     </div>
@@ -78,7 +83,8 @@
 </template>
 
 <script>
-import {getProductData, getCategoryData} from '@/api/product'
+import {getProductData, getCategoryData, updateProductData, deleteProductData, getProductTotalData} from '@/api/product'
+import {seasonToCode} from '@/utils/index'
 export default {
     data (){
         return {
@@ -91,7 +97,13 @@ export default {
                 stock : '',
                 sale_price : '',
                 selectCategoryOption : []
-            }
+            },
+            deleteForm : {
+                productId : ''
+            },
+            currentPage : 1,
+            ProductDataTotal : 0,
+            pageSize : 10
         }
     },
 
@@ -100,14 +112,18 @@ export default {
     },
 
     methods : {
-
-            handleDelete(index, row) {
-                console.log(index, row);
-            },
-
             async initData(){
-                this.getProduct()
-                this.getCategory()
+                try{
+                     const result = await getProductTotalData()
+                     if(result.data.status === 0){
+                        this.ProductDataTotal = result.data.count
+                     }
+                    this.getProduct()
+                    this.getCategory()
+                }catch(err){
+                    console.log(err)
+                }
+                
             },
 
             async getCategory() {
@@ -148,7 +164,9 @@ export default {
             },
 
             async getProduct(){
-                    const result = await getProductData()
+                    let currentPage = this.currentPage
+                    let pageSize = this.pageSize
+                    const result = await getProductData(currentPage, pageSize)
                     if(result.data.status === 0){
                         this.tableData = result.data.result
                     }else{
@@ -159,42 +177,67 @@ export default {
                     }
             },
 
-
-            seasonToCode (val){
-                let season_name = ''
-                switch(val){
-                    case '春季' :
-                    season_name = 'spring'
-                    break
-
-                    case '夏季' :
-                    season_name = 'summer'
-                    break
-
-                    case '秋季' :
-                    season_name = 'autumn'
-                    break
-
-                    case '冬季' :
-                    season_name = 'winter'
-                    break
-
-                    default : 
-                        season_name = '字段错误'
-                }
-                return season_name
-            },
-
+            //打开更新商品信息框
             handleEdit(index, row){
                 this.selectForm.productId = row.productId
                 this.selectForm.product_name = row.product_name
                 this.selectForm.stock = row.stock
                 this.selectForm.sale_price = row.sale_price
-                this.selectForm.selectCategoryOption[0] = row.shop.shopId
-                this.selectForm.selectCategoryOption[1] = row.year
-                this.selectForm.selectCategoryOption[2] = this.seasonToCode(row.season)
-                this.selectForm.selectCategoryOption[3] = row.style
+                this.selectForm.selectCategoryOption = [row.shop.shopId, row.year, seasonToCode(row.season), row.style]
                 this.dialogVisible = true;
+            },
+
+            //删除商品
+            async handleDelete(index, row) {
+                this.deleteForm.productId = row.productId
+                let params = {
+                    productId : this.deleteForm.productId
+                }
+                let result = await deleteProductData(params)
+                if(result.data.status === 0){
+                        this.$message({
+                            type : 'success',
+                            message : result.data.message
+                        })
+                }else{
+                        this.$message({
+                            type : 'error',
+                            message : result.data.message
+                        })
+                }
+            },
+            
+            //更新商品信息
+            async updateProduct(){
+                let params = {
+                    productId : this.selectForm.productId,
+                    product_name : this.selectForm.product_name,
+                    stock : this.selectForm.stock,
+                    category : this.selectForm.selectCategoryOption
+                }
+                let result = await updateProductData(params)
+                if(result.data.status === 0){
+                        this.$message({
+                            type : 'success',
+                            message : result.data.message
+                        })
+                }else{
+                        this.$message({
+                            type : 'error',
+                            message : result.data.message
+                        })
+                }
+                this.dialogVisible = false;
+            },
+
+            handleSizeChange(val){
+                this.pageSize = val
+                this.getProduct()
+            },
+
+            handleCurrentChange(val){
+                this.currentPage = val
+                this.getProduct()
             }
     }
 }

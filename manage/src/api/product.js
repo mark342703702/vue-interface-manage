@@ -11,6 +11,26 @@ export const addProductData = ( data = {}) => {
 }
 
 //获取商品数据
-export const getProductData = () => {
-    return axios.get('product/getProduct')
+export const getProductData = (currentPage = 1, pageSize = 10) => {
+    return axios.get('product/getProduct', {
+        params : {
+            currentPage,
+            pageSize
+        }
+    })
+}
+
+//更新商品数据
+export const updateProductData = ( data = {} ) => {
+    return axios.post('product/updateProduct', data)
+}
+
+//删除商品
+export const deleteProductData = ( data = {}) => {
+    return axios.post('product/deleteProduct', data)
+}
+
+//获取商品总数量
+export const getProductTotalData = () => {
+    return axios.get('/product/getProductCount')
 }
