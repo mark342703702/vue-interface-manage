@@ -32,7 +32,7 @@
                 <el-button
                 size="mini"
                 type="danger"
-                @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                @click="confirmDeleteProduct(scope.$index, scope.row)">删除</el-button>
             </template>
             </el-table-column>
         </el-table>
@@ -187,23 +187,48 @@ export default {
                 this.dialogVisible = true;
             },
 
+            //提示是否删除商品信息
+            confirmDeleteProduct(index, row){
+                this.$confirm('此操作将永久删除该商品信息,是否继续', '提示', {
+                    confirmButtonText : '确定',
+                    cancelButtonText : '取消',
+                    type : 'warning'
+                }).then( () => {
+
+                     this.handleDelete(index, row)
+                     
+                }).catch( () => {
+                     this.$message({
+                     type: 'info',
+                     message: '已取消删除'
+                  });          
+                })
+            },
+
             //删除商品
             async handleDelete(index, row) {
                 this.deleteForm.productId = row.productId
                 let params = {
                     productId : this.deleteForm.productId
                 }
-                let result = await deleteProductData(params)
-                if(result.data.status === 0){
+                
+                try{
+
+                    let result = await deleteProductData(params)
+                    if(result.data.status === 0){
                         this.$message({
                             type : 'success',
                             message : result.data.message
                         })
-                }else{
-                        this.$message({
-                            type : 'error',
-                            message : result.data.message
-                        })
+                     }else{
+                         throw new Error(result.data.message)
+                     }
+
+                }catch(err){
+                    this.$message({
+                        type: 'error',
+                        message: err.message
+                    });
                 }
             },
             

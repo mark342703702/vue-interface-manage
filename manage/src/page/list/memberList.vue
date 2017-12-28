@@ -8,28 +8,41 @@
                     <el-form-item label="余额">
                         <span>{{ props.row.account }}</span>
                     </el-form-item>
-                    <el-form-item label="电话">
-                        <span>{{ props.row.phone }}</span>
-                    </el-form-item>
-                    <el-form-item label="积分 ID">
-                        <span>{{ props.row.points }}</span>
+                    <el-form-item label="创建时间">
+                        <span>{{ props.row.create_time }}</span>
                     </el-form-item>
                     </el-form>
                 </template>
             </el-table-column>
-            <el-table-column prop="create_time" label="创建时间"></el-table-column>
-            <el-table-column prop="memberId" label="会员id"></el-table-column>
             <el-table-column prop="member_name" label="会员姓名"></el-table-column>
+            <el-table-column prop="points" label="积分"></el-table-column>
+            <el-table-column prop="phone" label="电话"></el-table-column>
         </el-table>
     </div>
+    <div class="Pagination">
+        <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            background
+            layout="prev, pager, next, jumper, total, sizes"
+            :current-page="currentPage"
+            :page-sizes="[10, 20, 30, 40]"
+            :page-size="pageSize"
+            :total="ProductDataTotal">
+        </el-pagination>
+    </div>
   </div>
+  
 </template>
 <script>
-import {getAllMemberData} from '@/api/member'
+import {getAllMemberData, getMemberTotalData} from '@/api/member'
 export default {
     data (){
         return {
-            tableData : []
+            tableData : [],
+            currentPage : 1,
+            ProductDataTotal : 0,
+            pageSize : 10
         }
     },
 
@@ -39,8 +52,23 @@ export default {
 
     methods : {
         async initData(){
+           try{
+               const result = await getMemberTotalData()
+               if(result.data.status === 0){
+                   this.ProductDataTotal = result.data.count
+               }
+               this.getMember()
+           }catch(err){
+               console.log(err)
+           }
+           
+        },
+
+        async getMember() {
+            let currentPage = this.currentPage
+            let pageSize = this.pageSize
             try{
-                const memberResult = await getAllMemberData()
+                const memberResult = await getAllMemberData(currentPage, pageSize)
                 if(memberResult.data.status === 0){
                     this.tableData = memberResult.data.result
                 }else{
@@ -53,6 +81,16 @@ export default {
                     message : '获取数据失败'
                 })
             }
+        },
+
+        handleSizeChange(val){
+            this.pageSize = val
+            this.getMember()
+        },
+
+        handleCurrentChange(val){
+            this.currentPage = val
+            this.getMember()
         }
     }
 }
