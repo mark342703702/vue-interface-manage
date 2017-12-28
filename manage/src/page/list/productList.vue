@@ -28,6 +28,7 @@
             <template slot-scope="scope">
                 <el-button
                 size="mini"
+                type="primary"
                 @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
                 <el-button
                 size="mini"
@@ -37,7 +38,7 @@
             </el-table-column>
         </el-table>
         <div class="Pagination">
-                 <el-pagination
+                <el-pagination
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
                     background
@@ -189,14 +190,13 @@ export default {
 
             //提示是否删除商品信息
             confirmDeleteProduct(index, row){
+
                 this.$confirm('此操作将永久删除该商品信息,是否继续', '提示', {
                     confirmButtonText : '确定',
                     cancelButtonText : '取消',
                     type : 'warning'
                 }).then( () => {
-
                      this.handleDelete(index, row)
-                     
                 }).catch( () => {
                      this.$message({
                      type: 'info',
@@ -220,6 +220,8 @@ export default {
                             type : 'success',
                             message : result.data.message
                         })
+                        this.tableData.splice(index,1)
+                        this.ProductDataTotal = this.ProductDataTotal - 1
                      }else{
                          throw new Error(result.data.message)
                      }

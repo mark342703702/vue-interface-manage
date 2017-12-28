@@ -3,7 +3,7 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
-
+import home from '@/page/home'
 import login from '@/page/login'
 import manage from '@/page/manage'
 import productList from '@/page/list/productList'
@@ -13,6 +13,7 @@ import addProduct from '@/page/add/addProduct'
 import addAdmin from '@/page/add/addAdmin'
 import addGirl from '@/page/add/addGirl'
 import addShop from '@/page/add/addShop'
+import editOrder from '@/page/edit/editOrder'
 
 const routes = [
     {
@@ -23,6 +24,10 @@ const routes = [
       path : '/manage',
       component : manage,
       children : [
+        {
+          path : '',
+          component : home
+        },
         {
           path : '/productList',
           component : productList
@@ -50,6 +55,10 @@ const routes = [
         {
           path : '/addShop',
           component : addShop
+        },
+        {
+          path : '/editOrder',
+          component : editOrder
         }
       ]
     }

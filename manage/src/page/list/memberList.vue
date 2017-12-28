@@ -9,7 +9,7 @@
                         <span>{{ props.row.account }}</span>
                     </el-form-item>
                     <el-form-item label="创建时间">
-                        <span>{{ props.row.create_time }}</span>
+                        <span>{{ props.row.create_time | getMoment }}</span>
                     </el-form-item>
                     </el-form>
                 </template>
@@ -36,6 +36,7 @@
 </template>
 <script>
 import {getAllMemberData, getMemberTotalData} from '@/api/member'
+import moment from 'moment'
 export default {
     data (){
         return {
@@ -48,6 +49,14 @@ export default {
 
     created(){
         this.initData()
+    },
+
+    filters : {
+    
+        getMoment (val){
+            return moment(val).format('YYYY-MM-DD HH:mm:ss')
+        }
+
     },
 
     methods : {
