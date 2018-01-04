@@ -12,6 +12,9 @@
                     <el-form-item  prop="phone" label="职员电话">
                         <el-input v-model="addGirlForm.phone" placeholder="职员电话"></el-input>
                     </el-form-item>
+                    <el-form-item  prop="girlId" label="职员工号">
+                        <el-input v-model="addGirlForm.girlId" placeholder="职员工号"></el-input>
+                    </el-form-item>
                     <el-form-item label="所属店铺">
                         <el-select v-model="addGirlForm.shop" placeholder="请选择店铺" value-key="shopId">
                             <el-option
@@ -40,7 +43,8 @@ export default {
             addGirlForm : {
                 girl_name : '',
                 phone : '',
-                shop : ''
+                shop : '',
+                girlId : ''
             },
 
             ShopOptions: [],
@@ -53,8 +57,12 @@ export default {
                 phone: 
                     [
 						{ required: true, message: '请输入职员电话', trigger: 'blur' }
-					]
-				}
+                    ],
+                girlId : 
+                    [
+                        { required: true, message: '请输入职员工号', trigger: 'blur' }
+                    ]
+                },
         }
     },
 
@@ -69,7 +77,8 @@ export default {
                     const params = {
                         girl_name : this.addGirlForm.girl_name,
                         phone : this.addGirlForm.phone,
-                        shop : this.addGirlForm.shop
+                        shop : this.addGirlForm.shop,
+                        girlId : this.addGirlForm.girlId
                     }
                     
                     let result = await addGirlData(params)

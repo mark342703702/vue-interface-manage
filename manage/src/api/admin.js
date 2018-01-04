@@ -9,3 +9,8 @@ export const addAdminData = (data = {}) => {
 export const addGirlData = (data = {}) => {
     return axios.post('/admin/girl/addGirl', data)
 }
+
+//获取职员数据
+export const getGirlData = () => {
+    return axios.get('/admin/girl/getGirl')
+}

@@ -34,3 +34,8 @@ export const deleteProductData = ( data = {}) => {
 export const getProductTotalData = () => {
     return axios.get('/product/getProductCount')
 }
+
+//模糊查询商品数据
+export const getProductDataMisty = () => {
+    return axios.get('/product/getProductMisty')
+}
