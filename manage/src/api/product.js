@@ -36,6 +36,10 @@ export const getProductTotalData = () => {
 }
 
 //模糊查询商品数据
-export const getProductDataMisty = () => {
-    return axios.get('/product/getProductMisty')
+export const getProductDataMisty = (reg) => {
+    return axios.get('/product/getProductMisty', {
+        params : {
+            reg
+        }
+    })
 }

@@ -2,6 +2,20 @@
     <div class="orderBackground">
         <el-row>
             <el-col :span="24">
+                <el-dialog
+                    title="商品详情"
+                    :visible.sync="dialogProduct"
+                    width="60%">
+                    <el-table :data="checkProductData" border>
+                        <el-table-column prop="productId" label="商品编号" align="center"></el-table-column>
+                        <el-table-column prop="product_name" label="商品名称" align="center"></el-table-column>
+                        <el-table-column prop="sale_price" label="价格" align="center"></el-table-column>
+                        <el-table-column prop="stock" label="库存" align="center"></el-table-column>
+                        <el-table-column prop="shop.shop_name" label="所属店铺" align="center"></el-table-column>
+                    </el-table>
+                </el-dialog>
+            </el-col>
+            <el-col :span="24">
                  <div class="orderTitle">编辑订单</div>
             </el-col>
             <el-col :span="24">
@@ -9,13 +23,12 @@
                     <el-table :data="orderTable" border class="orderTable" :row-style="isReturnProduct">
                         <el-table-column type="index" align="center"></el-table-column>
                         <el-table-column prop="productId" label="商品编号" align="center"></el-table-column>
-                        <el-table-column prop="colnumber" label="商品数量" sortable align="center">
-                        </el-table-column>
                         <el-table-column prop="sale_price" label="单价" sortable align="center"></el-table-column>
+                        <el-table-column prop="colnumber" label="商品数量" sortable align="center"></el-table-column>
                         <el-table-column prop="colTotal" label="金额" sortable align="center"></el-table-column>
                         <el-table-column label="操作">
                             <template slot-scope="scope">
-                            <el-button size="mini" type="primary">查看</el-button>
+                            <el-button size="mini" type="primary" @click="checkProductMessage(scope.$index, scope.row)">查看</el-button>
                             <el-button size="mini" type="danger" @click="confirmDeleteProduct(scope.$index, scope.row)">删除</el-button>
                             </template>
                         </el-table-column>
@@ -28,9 +41,15 @@
                         <el-row>
                             <el-col :span="24">
                                 <el-form-item prop="productId" label="商品编号">
-                                    <el-input autofocus v-model="orderForm.productId" placeholder="商品编号"
-                                    clearable suffix-icon="el-icon-edit-outline">
-                                    </el-input>
+                                    <el-autocomplete
+                                       v-model="orderForm.productId" 
+                                       :fetch-suggestions="querySearchAsync"
+                                       placeholder="请输入商品编号"
+                                       @select="productSelect"
+                                       autofocus
+                                       style="width: 100%;"
+                                       :trigger-on-focus="false"
+                                    ></el-autocomplete>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -59,7 +78,9 @@
                                     <el-date-picker
                                     v-model="nowDate"
                                     type="date"
-                
+                                    align="left"
+                                    :picker-options="pickerOptions"
+                                    :editable="false"
                                     placeholder="选择日期">
                                     </el-date-picker>
                                 </el-form-item>
@@ -95,16 +116,21 @@
 
 <script>
 import { getGirlData }  from '@/api/admin' 
+import { getProductDataMisty } from '@/api/product'
 export default {
     data () {
         return {
+
+            //当前输入商品信息
             orderForm : {
                 productId : '',
                 colnumber : 1,
                 sale_price : '',
-                isReturn : 'sold'
+                isReturn : 'sold',
+                detail : {}
             },
 
+            //校验规则
             editOrderRules : {
                 productId : [
 
@@ -120,10 +146,46 @@ export default {
 
             //经手人
             saler : '5',
-            nowDate : '',
 
+            //当前时间
+            nowDate :new Date(),
+
+            //是否显示详细商品信息
+            dialogProduct : false,
+
+            //当前查看商品详情信息
+            checkProductData : [],
+
+            //select选择器职员信息数据
             salerOptions : [],
-            orderTable : []
+
+            //订单列表数据
+            orderTable : [],
+
+            //设置时间选择器快捷键
+            pickerOptions : {
+
+                disabledDate(time) {
+                    return time.getTime() > Date.now();
+                },
+
+                shortcuts : [
+                    {
+                        text : '今天',
+                        onClick(picker) {
+                             picker.$emit('pick', new Date());
+                        }
+                    },
+                    {
+                        text : '昨天',
+                        onClick(picker) {
+                            const date = new Date();
+                            date.setTime(date.getTime() - 3600 * 1000 * 24);
+                            picker.$emit('pick', date);
+                        }
+                    }
+                ]
+            }
 
         }
     },
@@ -134,15 +196,64 @@ export default {
 
     methods : {
 
+        //查看商品详细信息
+        checkProductMessage(index, row){
+            this.dialogProduct = true
+            this.checkProductData = []
+            this.checkProductData.push(row.detail)
+        },
+
+        //模糊查询
+        async querySearchAsync(queryString, cb){
+            if(queryString){
+                try{
+                    const productResult = await getProductDataMisty(queryString)
+                    if(productResult.data.status === 0){
+                        let productArray = productResult.data.result
+                        if(productArray instanceof Array){
+                            productArray.map(item => {
+                                item.value = item.productId
+                                return item
+                            })
+                            cb(productArray)
+                        }else{
+                            throw new Error(productResult.data.message)
+                        }
+                    }else{
+                        throw new Error(productResult.data.message)
+                    }
+                }catch(err){
+                    console.log('获取商品数据失败', err)
+                }
+            }
+        },
+
+        //模糊查找后选择商品
+        productSelect(product){
+            this.orderForm.detail = product
+            this.orderForm.productId = product.productId
+            this.orderForm.sale_price = product.sale_price
+        },
+
+        //初始化数据
         async initData(){
 
-            let girlResult = await getGirlData()
-            for(let item of girlResult.data.result){
-                var addNew = {}
-                addNew.value = item.girlId
-                addNew.label = item.girl_name
-                this.salerOptions.push(addNew)
+            try{
+                let girlResult = await getGirlData()
+                if(girlResult.data.status === 0){
+                    for(let item of girlResult.data.result){
+                        var addNew = {}
+                        addNew.value = item.girlId
+                        addNew.label = item.girl_name
+                        this.salerOptions.push(addNew)
+                    }
+                }else{
+                    throw new Error(girlResult.data.message)
+                }
+            }catch(err){
+                console.log('获取职员数据失败', err)
             }
+            
             
         },
 
@@ -156,13 +267,13 @@ export default {
                 }).then( () => {
 
                     this.orderTable.splice(index,1)
-                    this.$message({
+                    this.$notify({
                             type : 'success',
                             message : '删除成功'
                     })
 
                 }).catch( () => {
-                     this.$message({
+                     this.$notify({
                      type: 'info',
                      message: '已取消删除'
                   });          
@@ -206,6 +317,7 @@ export default {
                         type : 'success'
                     })
                     this.$refs[formName].resetFields()
+                    this.orderForm.detail = {}
                 }else{
                     this.$notify({
                         title : '错误',
@@ -224,9 +336,11 @@ export default {
                 colnumber : this.orderForm.colnumber,
                 sale_price : this.orderForm.sale_price,
                 isReturn : this.orderForm.isReturn,
-                colTotal : this.orderForm.colnumber * this.orderForm.sale_price
+                colTotal : this.orderForm.colnumber * this.orderForm.sale_price,
+                detail : this.orderForm.detail
             }
 
+            //检查是否为退货,若是,则设置总价为负值
             if(params.isReturn == 'back'){
                 params.colTotal = -params.colTotal
             }
