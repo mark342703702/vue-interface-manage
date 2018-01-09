@@ -1,33 +1,55 @@
 <template>
     <div class="login_page">
-	  		<section class="form_contianer">
-		  		<div class="manage_tip">
-		  			<p>接口管理系统</p>
-            <el-form :model="loginForm" :rules="rules"  status-icon ref="loginForm">
-              <el-form-item  prop="QQ">
-                 <el-input v-model="loginForm.QQ" placeholder="QQ"></el-input>
-              </el-form-item>
-              <el-form-item prop="password">
-                 <el-input v-model="loginForm.password" placeholder="密码"></el-input>
-              </el-form-item>
-              <el-form-item>
-                 <el-button type="success" class="submit_btn"  @click="submitForm('loginForm')">登录</el-button>
-              </el-form-item>
-            </el-form>
-		  		</div>
-	  		</section>
+        <el-row type="flex" class="row-bg" justify="center">
+          <el-col :span="8">
+            <section class="form_contianer">
+              <div class="manage_tip">
+                <p>接口管理系统</p>
+                <el-form :model="loginForm" :rules="rules" status-icon ref="loginForm">
+                  <el-form-item  prop="QQ">
+                    <el-input v-model="loginForm.QQ" placeholder="QQ"></el-input>
+                  </el-form-item>
+                  <el-form-item prop="password">
+                    <el-input v-model="loginForm.password" placeholder="密码"></el-input>
+                  </el-form-item>
+                  <el-form-item prop="shop">
+                    <el-select v-model="loginForm.shop" placeholder="请选择店铺" value-key="shopId" class="select">
+                      <el-option
+                      v-for="item in ShopOptions"
+                      :key="item.shopId"
+                      :label="item.shop_name"
+                      :value="item">
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item>
+                    <el-button type="success" class="submit_btn"  @click="submitForm('loginForm')">登录</el-button>
+                  </el-form-item>
+                </el-form>
+              </div>
+	  		    </section>
+          </el-col>
+        </el-row>
   	</div>
 </template>
 
 <script>
 import axios from 'axios'
+import { getShopData } from '@/api/shop'
+import { mapState, mapMutations } from 'Vuex'
+ 
 export default {
   data () {
     return {
       loginForm : {
         QQ : '',
-        password : ''
+        password : '',
+        shop : ''
       },
+
+      //店铺数据
+      ShopOptions : [],
+
       rules: {
           QQ:
               [
@@ -36,11 +58,27 @@ export default {
           password: 
               [
 						      { required: true, message: '请输入密码', trigger: 'blur' }
-					    ]
+              ],
+          shop : 
+              [
+                  { required: true, message: '请选择店铺', trigger: 'blur' }
+              ]
 				}
     }
   },
+
+  created(){
+        this.initData()
+  },
+
+  computed : {
+      ...mapState(['current_shop'])
+  },
+  
   methods : {
+
+    ...mapMutations(['setCurrentShop']),
+
     async submitForm (formName){
       this.$refs[formName].validate( async (valid) => {
         if(valid){
@@ -54,6 +92,7 @@ export default {
                  type : 'success',
                  message : result.data.message
                })
+               this.setCurrentShop(this.loginForm.shop)
                this.$router.push('manage')
             }else{
               this.$message({
@@ -65,31 +104,53 @@ export default {
           //失败,返回错误信息
           this.$notify({
             type : 'error',
-            message : '请输入QQ或者密码',
+            message : '请输入所有信息',
             duration : 1500,
             showClose : false
           })
           return false
         }
       })
-    }
+    },
+
+    async initData(){
+      try{
+            let fields = {shopId : 1, shop_name : 1, _id : 0}
+            let shopResult = await getShopData({},fields)
+              if(shopResult.data.status === 0){
+                  this.ShopOptions = shopResult.data.result
+              }else{
+                  throw new Error('获取店铺数据失败')
+              }
+
+          }catch(err){
+            this.$message({
+                type : 'error',
+                message : '获取店铺数据失败'
+            })
+          }
+     }
+
   }
 }
 </script>
 
 <style lang="scss" scoped type="text/css">
   .form_contianer{
-    width: 320px;
-    height: 240px;
+
     padding: 25px;
 		border-radius: 5px;
 		text-align: center;
 		background-color: #fff; 
-    margin: 0 auto;
+    
   
      .submit_btn{
 			width: 100%;
 			font-size: 16px;
+    }
+
+    .select{
+      width: 100%;
     }
     
     p{
@@ -103,7 +164,9 @@ export default {
   .login_page{
     background-color: #324057;
     width: 100%;
+    height: 100%;
     min-height: 800px;
     padding-top: 200px;
   }
+
 </style>

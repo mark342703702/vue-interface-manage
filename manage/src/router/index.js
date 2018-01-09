@@ -14,6 +14,7 @@ import addAdmin from '@/page/add/addAdmin'
 import addGirl from '@/page/add/addGirl'
 import addShop from '@/page/add/addShop'
 import editOrder from '@/page/edit/editOrder'
+import setting from '@/page/setting'
 
 const routes = [
     {
@@ -59,6 +60,9 @@ const routes = [
         {
           path : '/editOrder',
           component : editOrder
+        },{
+          path : '/setting',
+          component : setting
         }
       ]
     }

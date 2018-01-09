@@ -1,7 +1,7 @@
 <template>
     <div class="form_container">
         <el-row>
-            <el-col :span="8" :offset="8" ><div class="addMemberHeader">添加职员</div></el-col>
+            <el-col :span="8" :offset="8" ><div class="Header">添加职员</div></el-col>
         </el-row>
         <el-row>
             <el-col :sm="{span : 20, offset : 2}" :md="{span : 16, offset : 4}" :lg="{span : 10, offset : 7}">
@@ -133,5 +133,5 @@ export default {
 </script>
 
 <style lang="scss" type="text/css">
-   
+    @import '../../style/common';
 </style>

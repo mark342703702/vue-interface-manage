@@ -1,7 +1,7 @@
 <template>
     <div class="form_container">
         <el-row>
-            <el-col :span="8" :offset="8" ><div class="addMemberHeader">添加会员</div></el-col>
+            <el-col :span="8" :offset="8" ><div class="Header">添加会员</div></el-col>
         </el-row>
         <el-row>
             <el-col :sm="{span : 20, offset : 2}" :md="{span : 16, offset : 4}" :lg="{span : 10, offset : 7}">
@@ -84,20 +84,5 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" type="text/css">
-    .form_container{
-        padding: 20px;
-
-        .addMemberHeader{
-            height: 30px;
-            color:#cf4646;
-            font-size: 18px;
-            text-align: center;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        .submit_btn{
-            width: 100%;
-        }
-    }
+    @import '../../style/common';
 </style>
