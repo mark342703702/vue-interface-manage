@@ -17,10 +17,11 @@
             </el-col>
             <el-col :span="24">
                  <div class="orderTitle">编辑订单</div>
+                 <input type="text" @keyup.enter="orderTableSubmit" ref="orderSubmitRef" class="inputHide">
             </el-col>
             <el-col :span="24">
                  <div class="orderListTable">
-                    <el-table :data="orderTable" border class="orderTable" :row-style="isReturnProduct">
+                    <el-table :data="orderTable" border class="orderTable" :row-style="isReturnProduct" show-summary :summary-method="getSummaries">
                         <el-table-column type="index" align="center"></el-table-column>
                         <el-table-column prop="productId" label="商品编号" align="center"></el-table-column>
                         <el-table-column prop="sale_price" label="单价" sortable align="center"></el-table-column>
@@ -80,6 +81,7 @@
                                     type="date"
                                     align="left"
                                     :picker-options="pickerOptions"
+                                    value-format="yyyy-MM-dd"
                                     :editable="false"
                                     placeholder="选择日期">
                                     </el-date-picker>
@@ -93,7 +95,7 @@
                                 </el-form-item>
                             </el-col>
                             <el-col :span="6">
-                                <el-form-item prop="saler" label="销售员">
+                                <el-form-item prop="saler" label="经手人">
                                     <el-select v-model="saler" placeholder="请选择">
                                         <el-option
                                         v-for="item in salerOptions"
@@ -117,10 +119,12 @@
 <script>
 import { getGirlData }  from '@/api/admin' 
 import { getProductDataMisty } from '@/api/product'
+import { addOrderData } from '@/api/order'
+import moment from 'moment'
+
 export default {
     data () {
         return {
-
             //当前输入商品信息
             orderForm : {
                 productId : '',
@@ -148,7 +152,7 @@ export default {
             saler : '5',
 
             //当前时间
-            nowDate :new Date(),
+            nowDate :moment().format('YYYY-MM-DD'),
 
             //是否显示详细商品信息
             dialogProduct : false,
@@ -195,6 +199,100 @@ export default {
     },
 
     methods : {
+
+        //提交订单列表到后台
+        async orderTableSubmit(){
+            let params = {
+                create_time : this.nowDate,
+                saler : this.saler,
+                shop : {
+                    shopId : 'shop123123',
+                    shop_name : 'adidas'
+                },
+                soldGoods : [],
+                returnGoods : []
+            }
+
+            this.orderTable.forEach( item => {
+                let addnew = {}
+                addnew.productId = item.productId,
+                addnew.current_sale_price = item.sale_price,
+                addnew.buyin_price = item.detail.buyin_price,
+                addnew.goodsNumber = item.colnumber,
+                addnew.goodsTotal = item.colTotal,
+                addnew.product_name = item.detail.product_name
+                if(item.isReturn === 'sold'){
+                    params.soldGoods.push(addnew)
+                }else if(item.isReturn === 'back'){
+                    params.returnGoods.push(addnew)
+                }
+            })
+
+            try{
+
+                let result = await addOrderData(params)
+                console.log(result)
+                if(result.data.status === 0){
+                    this.$message({
+                        type : 'success',
+                        message : result.data.message
+                    })
+                    this.orderTable = []
+                }else{
+                     throw new Error(result.data.message)
+                }
+                
+            }catch(err){
+
+                this.$message({
+                        type : 'error',
+                        message : '添加订单失败'
+                })
+                
+                console.log('添加订单失败', err)
+            }   
+            
+            
+        },
+
+        //订单列表合计设置
+        getSummaries(param){
+            const { columns, data } = param;
+            const sums = [];
+            columns.forEach((column, index) => {
+                if (index === 1) {
+                    sums[index] = '合计'
+                    return
+                }
+
+                if(index === 0 || index === 2 || index === 5){
+                    sums[index] = ''
+                    return
+                }
+
+                const values = data.map(item => Number(item[column.property]))
+                if (!values.every(value => isNaN(value))) {
+                    sums[index] = values.reduce((prev, curr) => {
+                        const value = Number(curr);
+                        if (!isNaN(value)) {
+                            return prev + curr;
+                        } else {
+                            return prev;
+                        }
+                    }, 0);
+                    
+                    if(index === 3){
+                       sums[index] += ' 个';
+                    }else{
+                       sums[index] += ' 元';
+                    }
+                   
+                }else {
+                    sums[index] = 'N/A';
+                }
+            })
+             return sums;
+        },
 
         //查看商品详细信息
         checkProductMessage(index, row){
@@ -286,6 +384,7 @@ export default {
             }else if(row.isReturn === 'sold'){
                 return { color : '#409EFA', fontWeight : 'bold'}
             }
+            
         },
 
         //添加相同商品,重新计算该商品数量,商品总价
@@ -326,6 +425,7 @@ export default {
                     })
                 }
             })
+            this.$refs.orderSubmitRef.focus()
         },
 
         //添加商品到订单列表中
@@ -356,11 +456,17 @@ export default {
 </script>
 
 <style lang="scss" scoped type="text/css">
+     
     .orderBackground{
         padding: 20px;
 		margin-bottom: 40px;
         background-color: #d3dce6;
         border-radius: 10px;
+
+        .inputHide{
+            opacity: 0;
+        }
+        
 
         .orderKeyboard{
             min-height: 80px;
@@ -381,7 +487,7 @@ export default {
 
         .orderListTable{
             margin-top: 20px;
-            min-height: 300px;
+            min-height: 500px;
         }
         
         .orderTitle{
@@ -392,5 +498,5 @@ export default {
             color: #cf4646;
         }
     }
-
 </style>
+

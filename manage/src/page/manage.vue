@@ -69,5 +69,6 @@ export default {
 
 	#content{
 		margin-left: 285px;
+		height: 100%;
 	}
 </style>
